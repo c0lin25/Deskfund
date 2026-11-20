@@ -1,0 +1,54 @@
+# deskfund settings — edit here, not in code.
+
+data:
+  # Price provider for the strategy universe: tiingo | fmp | yahoo | synthetic
+  #   tiingo    -> free key (500 unique symbols/month), $30/mo Power plan for more
+  #   fmp       -> ~$19-22/mo; better for single-stock fundamentals later
+  #   yahoo     -> no key, unofficial; fine for prototyping, not for production
+  #   synthetic -> offline random-walk data, for tests and demos
+  price_provider: tiingo
+  start_date: "2005-01-01"
+  store_dir: data            # Parquet files + DuckDB catalog live here
+  fred_series:               # pulled from FRED's public CSV endpoint (no key)
+    - DTWEXBGS               # broad trade-weighted USD index
+    - T10Y2Y                 # 10y-2y Treasury spread
+    - BAMLH0A0HYM2           # US high-yield OAS
+
+universe:
+  # Sleeves the strategy rotates between. One liquid ETF per region.
+  sleeves:
+    US: SPY
+    EAFE: EFA
+    EM: EEM
+  cash: BIL                  # used when the risk-off overlay is on
+  benchmark:
+    ticker: ACWI             # reference series for charts
+    # Static policy weights used for active weights + Brinson attribution.
+    # Roughly MSCI ACWI regional split; update annually.
+    weights:
+      US: 0.64
+      EAFE: 0.25
+      EM: 0.11
+
+strategy:
+  name: regional_rotation
+  rebalance: M               # M = month-end, W = week-end
+  signals:                   # each z-scored cross-sectionally, then blended
+    momentum_12_1: 0.5       # 12-month return skipping the latest month
+    momentum_3m: 0.2
+    trend_200d: 0.3          # price vs 200-day moving average
+  construction:
+    method: active_tilt      # active_tilt | inverse_vol | riskfolio_bl
+    max_active_weight: 0.15  # +/- cap vs benchmark per sleeve
+    tilt_scale: 0.10         # active weight per 1.0 of composite z-score
+    min_weight: 0.0
+  risk_off:
+    enabled: false           # if true: when every sleeve is below its 200d MA,
+    cash_weight: 0.5         #   move this fraction of the book to cash
+  costs_bps: 5               # one-way transaction cost on turnover
+
+execution:
+  broker: alpaca
+  paper: true                # keep true until you've cleared it with compliance
+  dry_run: true              # true = print orders, don't send
+  min_trade_usd: 50

@@ -1,0 +1,22 @@
+# Core — everything needed to ingest, backtest, attribute, and view the dashboard
+pandas>=2.2
+numpy>=1.26
+pyarrow>=14
+duckdb>=1.0
+pyyaml>=6
+requests>=2.31
+python-dotenv>=1.0
+streamlit>=1.50
+plotly>=5.20
+pytest>=8
+
+# Execution (Alpaca paper/live)
+alpaca-py>=0.30
+
+# Optional — install when you need them:
+#   yfinance           -> 'yahoo' price provider
+#   quantstats         -> full HTML tearsheets
+#   riskfolio-lib      -> 'riskfolio_bl' construction (Black-Litterman)
+#   alphalens-reloaded -> deeper factor/IC tearsheets
+#   vectorbt           -> fast parameter sweeps
+#   nautilus_trader    -> event-driven engine (phase 2)
